@@ -1,0 +1,226 @@
+Aim/Overview of the practical:
+·To perform the hierarchical clustering using R programming.
+code :
+# Load required packages
+
+library(datasets) # contains iris dataset
+library(cluster)  # clustering algorithms
+library(factoextra) # visualization
+library(purrr) # to use map_dbl() function
+
+# Load and preprocess the dataset
+
+df <- iris[, 1:4]
+df <- na.omit(df)
+df <- scale(df)
+# Dissimilarity matrix
+d <- dist(df, method="euclidean")
+d
+hc1 <- hclust(d, method = "complete")
+plot(hc1, cex = 0.6, hang=-1)
+sub_grps <- cutree(hc1, k=3)
+fviz_cluster(list(data = df, cluster = sub_grps))
+
+plot(hc1, cex = 0.6, hang=-1)
+rect.hclust(hc1, k = 3, border=2:4)
+
+
+#INSTALL THE REQUIRED LIBRARIES
+install.packages("naivebayes")
+install.packages("e1071")
+install.packages("caret")
+
+#LOAD THEM
+library(e1071)
+library(dplyr)
+library(caret)
+
+#LOAD DATASET AND PREPROCESS
+data("iris")
+head(iris)
+summary(iris)
+
+#TRAIN AND TEST THE DATA
+index = sample(2,nrow(iris),prob = c(0.85,0.15),replace=TRUE)
+set.seed(1234)  #IMPORTANT FUNCTION HELPS IN LESS RANDOMIZATION OF RESULTS
+train = iris[index==1,]
+test = iris[index==2,]
+test_data = test[1:4]
+test_label = test[,5]
+
+#CREATE THE MOEDL
+model=naiveBayes(train$Species~.,train)
+model
+#PREDICT
+test_result <- predict(model, test_data)
+test_result
+#CREATE TABLE WITH CONFUSION MATRIX AND STATISTICS OF MODEL
+ct <- table(x=test_label, y=test_result)
+ct
+confusionMatrix(ct)
+
+Code-3(decision tree)
+library(RWeka)
+library(partykit)
+library(caTools)
+
+iris_data = iris
+str(iris_data)
+summary(iris_data)
+spl = sample.split(iris_data, SplitRatio = 0.7)
+dataTrain = subset(iris_data, spl==TRUE)
+dataTest = subset(iris_data, spl==FALSE)
+m1 <- J48(Species~., dataTrain) 
+summary(m1)
+dataTestPred <- predict(m1, newdata = dataTest)
+table_matrix <- table(dataTest$Species, dataTestPred)
+print(table_matrix)
+accuracy_Test <- sum(diag(table_matrix)) / sum(table_matrix)
+cat("Test Accuracy is: ", accuracy_Test)
+# Initate PDF File
+pdf("Iris_decision_plot.pdf", paper="a4")
+plot(m1, type="simple")
+#Close PDF file
+dev.off()
+
+
+Code-4(kmean)
+# Loading data
+data(iris)
+
+# Structure 
+str(iris)
+
+# Installing Packages
+install.packages("ClusterR")
+install.packages("cluster")
+
+# Loading package
+library(ClusterR)
+library(cluster)
+
+# Removing initial label of Species from original dataset
+iris_1 <- iris[, -5]
+
+# Fitting K-Means clustering Model to training dataset
+set.seed(240) # Setting seed
+kmeans.re <- kmeans(iris_1, centers = 3, nstart = 20)
+kmeans.re
+
+#Cluster identification each observation
+kmeans.re$cluster
+
+# Confusion Matrix
+cm <- table(iris$Species, kmeans.re$cluster)
+cm
+
+# Model Evaluation and visualization
+plot(iris_1[c("Sepal.Length", "Sepal.Width")])
+plot(iris_1[c("Sepal.Length", "Sepal.Width")], 
+     col = kmeans.re$cluster)
+plot(iris_1[c("Sepal.Length", "Sepal.Width")], 
+     col = kmeans.re$cluster, 
+     main = "K-means with 3 clusters")
+
+## Plotiing cluster centers
+kmeans.re$centers
+kmeans.re$centers[, c("Sepal.Length", "Sepal.Width")]
+
+# cex is font size, pch is symbol
+points(kmeans.re$centers[, c("Sepal.Length", "Sepal.Width")], 
+       col = 1:3, pch = 8, cex = 3) 
+
+## Visualizing clusters
+y_kmeans <- kmeans.re$cluster
+clusplot(iris_1[, c("Sepal.Length", "Sepal.Width")],
+         y_kmeans,
+         lines = 0,
+         shade = TRUE,
+         color = TRUE,
+         labels = 2,
+         plotchar = FALSE,
+         span = TRUE,
+         main = paste("Cluster iris"),
+         xlab = 'Sepal.Length',
+         ylab = 'Sepal.Width')
+
+
+Code-5(apriori)
+# Loading Libraries
+library(arules)
+library(arulesViz)
+library(RColorBrewer)
+
+# import dataset
+data("Groceries")
+
+# using apriori() function
+rules <- apriori(Groceries,
+				parameter = list(supp = 0.01, conf = 0.2))
+
+# using inspect() function
+inspect(rules[1:10])
+
+# using itemFrequencyPlot() function
+arules::itemFrequencyPlot(Groceries, topN = 20,
+						col = brewer.pal(8, 'Pastel2'),
+						main = 'Relative Item Frequency Plot',
+						type = "relative",
+						ylab = "Item Frequency (Relative)")
+
+linear regg............
+#load dataset 
+data <- read.csv("C:\\Users\\Pikachu\\Desktop\\supermarket_sales.csv")
+data
+
+library(caTools)
+
+#splitting the data
+split = sample.split(data$Sales, SplitRatio = 0.7)
+trainingset = subset(data, split == TRUE)
+testset = subset(data, split == FALSE)
+
+linear_reg = lm(formula = Sales ~ Quantity, data = train)
+coef(linear_reg)
+
+linear_reg_1 = lm(formula = Sales ~ Tax_percent, data = train)
+coef(linear_reg_1)
+
+
+#plotting the results 
+library(ggplot2)
+
+#Quantity vs sales
+ggplot() + geom_point(aes(x = trainingset$Quantity, y = trainingset$Sales), colour = 'red') +
+  geom_line(aes(x = trainingset$Quantity,
+                y = predict(linear_reg, newdata = trainingset)), colour = 'blue') +
+  
+  ggtitle('Sales vs quantity (Training set)') +
+  xlab('Quantity') +
+  ylab('sales')
+
+#Tax_percent vs sales
+ggplot() + geom_point(aes(x = trainingset$Tax_percent, y = trainingset$Sales), colour = 'red') +
+  geom_line(aes(x = trainingset$Tax_percent,
+                y = predict(linear_reg_1, newdata = trainingset)), colour = 'blue') +
+  
+  ggtitle('Sales vs Tax percent (Training set)') +
+  xlab('Tax Percent') +
+  ylab('sales')
+
+#Test results
+
+ggplot() +
+  geom_point(aes(x = testset$Quantity, y = testset$Sales),
+             colour = 'red') +
+  geom_line(aes(x = trainingset$Quantity,
+                y = predict(linear_reg, newdata = trainingset)),
+            colour = 'blue') +
+  ggtitle('Sales vs Quantity (Test set)') +
+  xlab('Sales') +
+  ylab('Quantity')
+  
+  
+  
+  
+  
